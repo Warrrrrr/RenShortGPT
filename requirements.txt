@@ -17,4 +17,5 @@ pillow==10.4.0
 moviepy==2.1.2
 progress
 questionary
+setuptools<82 
 edge-tts
