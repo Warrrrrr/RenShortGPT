@@ -47,7 +47,7 @@ class AssetDatabase:
 
     @classmethod
     def asset_exists(cls, name: str) -> bool:
-        return name in cls.local_assets._get() or name in cls.remote_assets._get()
+        return name in (cls.local_assets._get() or {}) or name in (cls.remote_assets._get() or {})
 
     @classmethod
     def add_local_asset(cls, name: str, asset_type: AssetType, path: str):
@@ -71,9 +71,9 @@ class AssetDatabase:
 
     @classmethod
     def remove_asset(cls, name: str):
-        if name in cls.local_assets._get():
+        if name in (cls.local_assets._get() or {}):
             cls._remove_local_asset(name)
-        elif name in cls.remote_assets._get():
+        elif name in (cls.remote_assets._get() or {}):
             cls.remote_assets._delete(name)
         else:
             raise ValueError(f"Asset '{name}' does not exist in the database.")
@@ -83,7 +83,7 @@ class AssetDatabase:
         cls.sync_local_assets()
         data = []
         if source is None or source == 'local':
-            for key, asset in cls.local_assets._get().items():
+            for key, asset in (cls.local_assets._get() or {}).items():
                 data.append({'name': key,
                              'type': asset['type'],
                              'link': asset['path'],
@@ -91,7 +91,7 @@ class AssetDatabase:
                              'ts': asset.get('ts')
                              })
         if source is None or source == 'youtube':
-            for key, asset in cls.remote_assets._get().items():
+            for key, asset in (cls.remote_assets._get() or {}).items():
                 data.append({'name': key,
                             'type': asset['type'],
                              'link': asset['url'],
@@ -110,7 +110,7 @@ class AssetDatabase:
         """
         Loads all local assets from the static-assets folder into the database.
         """
-        local_assets = cls.local_assets._get()
+        local_assets = cls.local_assets._get() or {}
         local_paths = {asset['path'] for asset in local_assets.values()}
 
         for path in Path('public').rglob('*'):
@@ -128,9 +128,9 @@ class AssetDatabase:
         Returns:
             str: Link to the asset.
         """
-        if key in cls.local_assets._get():
+        if key in (cls.local_assets._get() or {}):
             return cls._update_local_asset_timestamp_and_get_link(key)
-        elif key in cls.remote_assets._get():
+        elif key in (cls.remote_assets._get() or {}):
             return cls._get_remote_asset_link(key)
         else:
             raise ValueError(f"Asset '{key}' does not exist in the database.")
@@ -146,9 +146,9 @@ class AssetDatabase:
         Returns:
             str: Duration of the asset.
         """
-        if key in cls.local_assets._get():
+        if key in (cls.local_assets._get() or {}):
             return cls._get_local_asset_duration(key)
-        elif key in cls.remote_assets._get():
+        elif key in (cls.remote_assets._get() or {}):
             return cls._get_remote_asset_duration(key)
         else:
             raise ValueError(f"Asset '{key}' does not exist in the database.")
